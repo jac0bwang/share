@@ -41,7 +41,7 @@ platform_driver_register(drv)
                     __driver_attach(dev, data);
                         driver_match_device(drv, dev);
                         driver_probe_device(drv, dev);
-                            really_probe(dev, drv); 
+                            really_probe(dev, drv);
                                 dev->bus->probe(dev); or drv->probe(dev);
 ```
 
@@ -49,89 +49,89 @@ platform_driver_register(drv)
 
 ```C
 struct platform_driver {
-        int (*probe)(struct platform_device *);                       
-        int (*remove)(struct platform_device *);                      
-        void (*shutdown)(struct platform_device *);                   
-        int (*suspend)(struct platform_device *, pm_message_t state); 
-        int (*resume)(struct platform_device *);                      
-        struct device_driver driver;                                  
-        const struct platform_device_id *id_table;                    
-        bool prevent_deferred_probe;                                  
+        int (*probe)(struct platform_device *);
+        int (*remove)(struct platform_device *);
+        void (*shutdown)(struct platform_device *);
+        int (*suspend)(struct platform_device *, pm_message_t state);
+        int (*resume)(struct platform_device *);
+        struct device_driver driver;
+        const struct platform_device_id *id_table;
+        bool prevent_deferred_probe;
 };
 ```
 
 首先分析 platform_driver_register 用到的 platform_driver 结构体，其中包含了 probe 和 remove 等相关操作， 同时还内嵌了device_driver 结构体，下面看看这个结构体中都有什么内容：
 
 ```c
-/**                                                                          
- * struct device_driver - The basic device driver structure                  
- * @name:       Name of the device driver.                                   
- * @bus:        The bus which the device of this driver belongs to.          
- * @owner:      The module owner.                                            
- * @mod_name:   Used for built-in modules.                                   
- * @suppress_bind_attrs: Disables bind/unbind via sysfs.                     
- * @probe_type: Type of the probe (synchronous or asynchronous) to use.      
- * @of_match_table: The open firmware table.                                 
- * @acpi_match_table: The ACPI match table.                                  
- * @probe:      Called to query the existence of a specific device,          
- *              whether this driver can work with it, and bind the driver    
- *              to a specific device.                                        
- * @remove:     Called when the device is removed from the system to         
- *              unbind a device from this driver.                            
- * @shutdown:   Called at shut-down time to quiesce the device.              
- * @suspend:    Called to put the device to sleep mode. Usually to a         
- *              low power state.                                             
- * @resume:     Called to bring a device from sleep mode.                    
- * @groups:     Default attributes that get created by the driver core       
- *              automatically.                                               
- * @pm:         Power management operations of the device which matched      
- *              this driver.                                                 
- * @p:          Driver core's private data, no one other than the driver     
- *              core can touch this.                                         
- *                                                                           
- * The device driver-model tracks all of the drivers known to the system.    
- * The main reason for this tracking is to enable the driver core to match   
- * up drivers with new devices. Once drivers are known objects within the    
- * system, however, a number of other things become possible. Device drivers 
- * can export information and configuration variables that are independent   
- * of any specific device.                                                   
- */                                                                          
+/**
+ * struct device_driver - The basic device driver structure
+ * @name:       Name of the device driver.
+ * @bus:        The bus which the device of this driver belongs to.
+ * @owner:      The module owner.
+ * @mod_name:   Used for built-in modules.
+ * @suppress_bind_attrs: Disables bind/unbind via sysfs.
+ * @probe_type: Type of the probe (synchronous or asynchronous) to use.
+ * @of_match_table: The open firmware table.
+ * @acpi_match_table: The ACPI match table.
+ * @probe:      Called to query the existence of a specific device,
+ *              whether this driver can work with it, and bind the driver
+ *              to a specific device.
+ * @remove:     Called when the device is removed from the system to
+ *              unbind a device from this driver.
+ * @shutdown:   Called at shut-down time to quiesce the device.
+ * @suspend:    Called to put the device to sleep mode. Usually to a
+ *              low power state.
+ * @resume:     Called to bring a device from sleep mode.
+ * @groups:     Default attributes that get created by the driver core
+ *              automatically.
+ * @pm:         Power management operations of the device which matched
+ *              this driver.
+ * @p:          Driver core's private data, no one other than the driver
+ *              core can touch this.
+ *
+ * The device driver-model tracks all of the drivers known to the system.
+ * The main reason for this tracking is to enable the driver core to match
+ * up drivers with new devices. Once drivers are known objects within the
+ * system, however, a number of other things become possible. Device drivers
+ * can export information and configuration variables that are independent
+ * of any specific device.
+ */
 
-struct device_driver {                                                         
-        const char              *name;                                         
-        struct bus_type         *bus;                                          
-                                                                               
-        struct module           *owner;                                        
+struct device_driver {
+        const char              *name;
+        struct bus_type         *bus;
+
+        struct module           *owner;
         const char              *mod_name;      /* used for built-in modules */
-                                                                               
-        bool suppress_bind_attrs;       /* disables bind/unbind via sysfs */   
-        enum probe_type probe_type;                                            
-                                                                               
-        const struct of_device_id       *of_match_table;                       
-        const struct acpi_device_id     *acpi_match_table;                     
-                                                                               
-        int (*probe) (struct device *dev);                                     
-        int (*remove) (struct device *dev);                                    
-        void (*shutdown) (struct device *dev);                                 
-        int (*suspend) (struct device *dev, pm_message_t state);               
-        int (*resume) (struct device *dev);                                    
-        const struct attribute_group **groups;                                 
-                                                                               
-        const struct dev_pm_ops *pm;                                           
-                                                                               
-        struct driver_private *p;                                              
+
+        bool suppress_bind_attrs;       /* disables bind/unbind via sysfs */
+        enum probe_type probe_type;
+
+        const struct of_device_id       *of_match_table;
+        const struct acpi_device_id     *acpi_match_table;
+
+        int (*probe) (struct device *dev);
+        int (*remove) (struct device *dev);
+        void (*shutdown) (struct device *dev);
+        int (*suspend) (struct device *dev, pm_message_t state);
+        int (*resume) (struct device *dev);
+        const struct attribute_group **groups;
+
+        const struct dev_pm_ops *pm;
+
+        struct driver_private *p;
 };
 ```
 
 这个结构体中包含了很多东西，包括所属的总线，模块名字，设备匹配的 ID 表等， 其中有一个指向 driver_private 的指针 p，一些与其他的组件相关的联系都被移到这个结构变量中
 
 ```c
-struct driver_private {                                              
-        struct kobject kobj;                                         
-        struct klist klist_devices;                                  
-        struct klist_node knode_bus;                                 
-        struct module_kobject *mkobj;                                
-        struct device_driver *driver;                                
+struct driver_private {
+        struct kobject kobj;
+        struct klist klist_devices;
+        struct klist_node knode_bus;
+        struct module_kobject *mkobj;
+        struct device_driver *driver;
 };
 #define to_driver(obj) container_of(obj, struct driver_private, kobj)
 ```
@@ -141,36 +141,36 @@ struct driver_private {
 platform 设备对应的结构体 platform_device
 
 ```c
-struct platform_device {                                         
+struct platform_device {
         const char      *name;    // 设备的名字这将代替device->dev_id，用作sys/device下显示的目录名
         int             id;       // 设备id，用于给插入给该总线并且具有相同name的设备编号，如果只有一个设备的话填-1
-        bool            id_auto;                                 
-        struct device   dev;                                     
-        u32             num_resources;                           
-        struct resource *resource;                               
+        bool            id_auto;
+        struct device   dev;
+        u32             num_resources;
+        struct resource *resource;
 
-        const struct platform_device_id *id_entry;               
+        const struct platform_device_id *id_entry;
         char *driver_override; /* Driver name to force a match */
-                                                                 
-        /* MFD cell pointer */                                   
-        struct mfd_cell *mfd_cell;                               
-                                                                 
-        /* arch specific additions */                            
-        struct pdev_archdata    archdata;                        
-};                                                               
+
+        /* MFD cell pointer */
+        struct mfd_cell *mfd_cell;
+
+        /* arch specific additions */
+        struct pdev_archdata    archdata;
+};
 ```
 
 在 platform_device 结构体中包含了名字、id、资源和内嵌device结构体，其中 resource 用于存放设备的资源信息，如IO地址、中断号等
 
 ```c
-struct resource {                                 
-        resource_size_t start;     // 资源的起始地址               
-        resource_size_t end;       // 资源的结束地址               
-        const char *name;                         
-        unsigned long flags;       // 资源的类型               
-        unsigned long desc;                       
+struct resource {
+        resource_size_t start;     // 资源的起始地址
+        resource_size_t end;       // 资源的结束地址
+        const char *name;
+        unsigned long flags;       // 资源的类型
+        unsigned long desc;
         struct resource *parent, *sibling, *child;
-};                                                
+};
 ```
 
 设备是设备，驱动是驱动
@@ -291,7 +291,7 @@ of_platform_populate(NULL, of_default_bus_match_table, NULL, NULL);
 ```C
 eth: eth@4,c00000 {
                 compatible = "davicom,dm9000";
-                reg = < 
+                reg = <
                         4 0x00c00000 0x2
                         4 0x00c00002 0x2
                 >;
@@ -307,7 +307,7 @@ static const struct of_device_id dm9000_of_matches[] = {
 };
 MODULE_DEVICE_TABLE(of, dm9000_of_matches);
 #endif
-        
+
 static struct platform_driver dm9000_driver = {
         .driver = {
                 .name    = "dm9000",
