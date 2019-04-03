@@ -1,5 +1,11 @@
 # Device Tree
 
+- https://www.socallinuxexpo.org/sites/default/files/presentations/Contemporary%20Device%20Tree.pdf
+- https://elinux.org/images/a/a3/Elce2013-petazzoni-devicetree-for-dummies.pdf
+- http://events17.linuxfoundation.org/sites/events/files/slides/dt_internals.pdf
+- [Device tree support on arm linux](https://www.slideshare.net/softpapa/device-tree-support-on-arm-linux-8930303?next_slideshow=1)
+- [Arm device tree and linux device drivers](https://www.slideshare.net/HouchengLin/arm-device-tree-and-linux-device-drivers?from_action=save)
+
 https://www.kernel.org/doc/Documentation/devicetree/usage-model.txt
 
 The “ Open Firmware Device Tree” , or simply Device Tree (DT), is a data
