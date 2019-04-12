@@ -410,10 +410,18 @@ static int is_softlockup(unsigned long touch_ts)
 watchdog_nmi_enable()->hardlockup_detector_perf_enable()->hardlockup_detector_event_create()
 中通过 perf_event_create_kernel_counter 注册一个硬件事件 watchdog_overflow_callback()
 
+而该事件以 watchdog_thresh 为周期运行, 时钟中断处理函数以 4s 为周期运行
+
 在 is_hardlockup 这个函数主要就是查看 hrtimer_interrupts 变量在时钟中断处理函数里有没有被更新。
 假如没有更新，就意味着中断出了问题，可能被错误代码长时间的关中断了
 
 ```c
+u64 hw_nmi_get_sample_period(int watchdog_thresh)
+{
+        return (u64)(cpu_khz) * 1000 * watchdog_thresh;
+
+}
+
 /* watchdog detector functions */
 bool is_hardlockup(void)
 {
