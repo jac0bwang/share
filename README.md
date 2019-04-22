@@ -5,3 +5,4 @@
 3. [Bus, Device and Driver Model](linux/bus_device_driver.md)
 4. [Device Tree](linux/devicetree.md)
 5. [Linux 内核中的 Soft 和 Hard Lockup](linux/01-lockup.md)
+6. [移植Linux 到 ARM 概要](linux/02-port-linux.md)
